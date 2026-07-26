@@ -220,7 +220,7 @@
   /* ---- Jobs-completed counter (single source of truth: #jobCount data-target) ----
      To auto-update both the counter AND the map, set DATA_URL to a public JSON
      ({"completed": <n>, "areas": [...same row shape...]}) that build_map_data.py writes daily. */
-  var DATA_URL = "";
+  var DATA_URL = "data.json";  // same-origin on Pages; refreshed daily by update_map_data.py
 
   function animateCount(el, target){
     var start=0, dur=1400, t0=null;
