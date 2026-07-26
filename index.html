@@ -54,6 +54,9 @@
   .pop-mix{font-size:12px;color:#4b4a4c;line-height:1.7}
   .pop-mix i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
   .pop-stars{color:var(--amber);font-size:12px;margin-top:5px;letter-spacing:1px}
+  .story-pin{font-size:22px;line-height:1;color:#e07b00;text-shadow:0 0 3px #fff,0 0 6px #fff,0 1px 3px rgba(0,0,0,.35);cursor:pointer}
+  .pop-story-kicker{font-size:10px;font-weight:700;letter-spacing:1.5px;color:#e07b00;text-transform:uppercase;margin-bottom:3px}
+  .pop-story-link{display:inline-block;margin-top:7px;font-size:13px;font-weight:700;color:#c26a00;text-decoration:none}
   .leaflet-popup-content{margin:12px 15px}
 
   @media (max-width:560px){
@@ -89,6 +92,7 @@
       <div class="row" data-type="Kitchen"><span class="swatch" style="background:#d98c30"></span> Kitchen renovation</div>
       <div class="row" data-type="Tile"><span class="swatch" style="background:#5f7d84"></span> Tile &amp; flooring</div>
       <div class="row" data-type="Repairs"><span class="swatch" style="background:#bf6a45"></span> Repairs &amp; maintenance</div>
+      <div class="row row-story active" id="storyToggle"><span style="width:13px;flex:none;text-align:center;color:#e07b00;font-size:15px;line-height:1">&#9733;</span> Client stories</div>
       <div class="hint">Tap a service to filter the map</div>
     </div>
 
@@ -109,6 +113,20 @@
 
   var TYPE_IDX = {Bathroom:5, Kitchen:6, Tile:7, Repairs:8}; // index into an AREAS row
   var ORDER = ['Bathroom','Kitchen','Tile','Repairs'];       // premium-first
+
+  /* Client stories published on duetright.com — locations are the neighborhoods the
+     posts themselves name, plotted at neighborhood level like everything else. */
+  var STORIES = [
+    ["West Seattle", 47.571, -122.392, "The Story of Dina's Fence", "west-seattle-cedar-fence-replacement"],
+    ["West Seattle", 47.562, -122.383, "Three Days, One Sliding Door", "west-seattle-patio-door-replacement"],
+    ["West Seattle", 47.552, -122.388, "A Magical Microcement Tub-to-Shower Conversion", "microcement-tub-to-shower-conversion-west-seattle"],
+    ["Capitol Hill", 47.62, -122.31, "Reimagining a Capitol Hill Bathroom in 4 Weeks", "4-week-capitol-hill-bathroom-renovation"],
+    ["Kirkland", 47.68, -122.19, "Reimagining a Kirkland Bathroom With Microcement", "reimagining-a-kirkland-bathroom-with-microcement"],
+    ["Queen Anne", 47.637, -122.362, "Tom's Queen Anne Condo Bathroom Remodel", "small-bathroom-remodel-in-queen-anne"],
+    ["Edmonds", 47.808, -122.338, "Ophelia's New Door", "cat-door-exterior-door-edmonds"],
+    ["Green Lake", 47.68, -122.33, "The Ultimate Double Shower Space in Green Lake", "green-lake-bathroom-remodel-dual-shower"],
+    ["Madison Park", 47.632, -122.28, "An 8-Day Spanish Tile Staircase Renovation", "spanish-tile-staircase-renovation"]
+  ];
 
   var map = L.map('map',{
     scrollWheelZoom:false, zoomControl:true,
@@ -161,8 +179,23 @@
     });
   }
 
+  var storyLayer = L.layerGroup().addTo(map);
+  var storyIcon = L.divIcon({className:'', html:'<div class="story-pin">&#9733;</div>', iconSize:[22,22], iconAnchor:[11,11], popupAnchor:[0,-8]});
+  STORIES.forEach(function(st){
+    L.marker([st[1],st[2]], {icon:storyIcon, title:st[3]}).bindPopup(
+      '<div class="pop-story-kicker">&#9733; Client story &middot; '+st[0]+'</div>'+
+      '<div class="pop-hood">'+st[3]+'</div>'+
+      '<a class="pop-story-link" href="https://www.duetright.com/blog/'+st[4]+'" target="_top">Read the story &rarr;</a>'
+    ).addTo(storyLayer);
+  });
+  var storyToggle = document.getElementById('storyToggle');
+  storyToggle.addEventListener('click', function(){
+    if(map.hasLayer(storyLayer)){ map.removeLayer(storyLayer); storyToggle.classList.remove('active'); storyToggle.classList.add('dim'); }
+    else { map.addLayer(storyLayer); storyToggle.classList.add('active'); storyToggle.classList.remove('dim'); }
+  });
+
   // legend as interactive filters
-  var rows = document.querySelectorAll('#legend .row');
+  var rows = document.querySelectorAll('#legend .row:not(.row-story)');
   rows.forEach(function(r){
     r.addEventListener('click', function(){
       var t = r.getAttribute('data-type');
