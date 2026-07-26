@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DuetRight — Where We Work</title>
+
+<!-- Leaflet via CDN (Webflow-embed friendly) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --teal:#037887;--teal-deep:#02616e;--charcoal:#424143;
+    --amber:#d98c30;--slate:#5f7d84;--clay:#bf6a45;--paper:#e9edee;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--charcoal);background:var(--paper)}
+  #wrap{position:relative;height:100%;width:100%;min-height:520px}
+  #map{position:absolute;inset:0;background:var(--paper)}
+
+  .panel{position:absolute;z-index:1000;top:20px;left:20px;max-width:340px;
+    background:rgba(255,255,255,.94);border:1px solid rgba(66,65,67,.10);border-radius:16px;
+    padding:18px 20px;box-shadow:0 16px 44px rgba(2,97,110,.16);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  .kicker{font-size:10.5px;font-weight:700;letter-spacing:2.2px;color:var(--teal);margin-bottom:6px}
+  .panel h1{margin:0;font-size:22px;font-weight:800;letter-spacing:-.4px;color:#2c2b2d}
+  .panel h1 .dot{color:var(--teal)}
+  .accent{height:3px;width:52px;margin:10px 0 12px;border-radius:3px;background:linear-gradient(90deg,var(--teal),rgba(3,120,135,0))}
+  .panel .sub{margin:0;font-size:13px;line-height:1.5;color:#5c5b5d}
+  .stat{display:flex;gap:18px;margin-top:16px;flex-wrap:wrap}
+  .stat .num{font-size:30px;font-weight:800;color:var(--teal);line-height:1;font-variant-numeric:tabular-nums}
+  .stat .lbl{font-size:10px;font-weight:600;color:#6d6c6e;text-transform:uppercase;letter-spacing:.5px;margin-top:5px;max-width:96px}
+
+  .legend{position:absolute;z-index:1000;bottom:20px;left:20px;
+    background:rgba(255,255,255,.94);border:1px solid rgba(66,65,67,.10);border-radius:14px;
+    padding:13px 15px;box-shadow:0 12px 30px rgba(2,97,110,.14);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  .legend .lt{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#6d6c6e;margin-bottom:9px}
+  .legend .row{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:500;color:#3f3e40;margin:3px 0;
+    cursor:pointer;padding:5px 8px;border-radius:8px;transition:background .12s,opacity .12s;user-select:none}
+  .legend .row:hover{background:rgba(3,120,135,.08)}
+  .legend .row.dim{opacity:.4}
+  .legend .row.active{background:rgba(3,120,135,.12);color:#1f1e20;font-weight:700}
+  .legend .swatch{width:13px;height:13px;border-radius:50%;flex:none;box-shadow:0 0 0 2px #fff, 0 1px 2px rgba(0,0,0,.3)}
+  .legend .hint{font-size:10.5px;color:#8a898b;margin-top:8px;font-weight:500}
+
+  .foot{position:absolute;z-index:1000;bottom:16px;right:16px;font-size:11px;color:#7c7b7d;
+    background:rgba(255,255,255,.82);padding:5px 10px;border-radius:8px;max-width:250px}
+
+  .pop-hood{font-weight:800;font-size:14px;color:#2c2b2d;margin-bottom:1px}
+  .pop-total{font-size:12px;color:var(--teal);font-weight:700;margin-bottom:6px}
+  .pop-mix{font-size:12px;color:#4b4a4c;line-height:1.7}
+  .pop-mix i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+  .pop-stars{color:var(--amber);font-size:12px;margin-top:5px;letter-spacing:1px}
+  .leaflet-popup-content{margin:12px 15px}
+
+  @media (max-width:560px){
+    .panel{max-width:none;left:12px;right:12px;top:12px;padding:15px 16px}
+    .panel h1{font-size:19px}
+    .stat .num{font-size:25px}
+    .legend{bottom:12px;left:12px}
+    .foot{display:none}
+  }
+</style>
+</head>
+<body>
+
+  <div id="wrap">
+    <div id="map"></div>
+
+    <div class="panel">
+      <div class="kicker">DUETRIGHT &middot; SEATTLE</div>
+      <h1>Where We Work<span class="dot">.</span></h1>
+      <div class="accent"></div>
+      <p class="sub">Bathroom renovations done right &mdash; plus kitchens, tile, flooring, and repairs across greater Seattle.</p>
+      <div class="stat">
+        <div><div class="num" id="jobCount" data-target="936">0</div><div class="lbl">jobs completed</div></div>
+        <div><div class="num">100+</div><div class="lbl">5-star reviews</div></div>
+        <div><div class="num">4.9&#9733;</div><div class="lbl">average rating</div></div>
+      </div>
+    </div>
+
+    <div class="legend" id="legend">
+      <div class="lt">Explore by service</div>
+      <div class="row active" data-type="all"><span class="swatch" style="background:linear-gradient(135deg,#037887,#d98c30)"></span> All work</div>
+      <div class="row" data-type="Bathroom"><span class="swatch" style="background:#037887"></span> Bathroom renovation</div>
+      <div class="row" data-type="Kitchen"><span class="swatch" style="background:#d98c30"></span> Kitchen renovation</div>
+      <div class="row" data-type="Tile"><span class="swatch" style="background:#5f7d84"></span> Tile &amp; flooring</div>
+      <div class="row" data-type="Repairs"><span class="swatch" style="background:#bf6a45"></span> Repairs &amp; maintenance</div>
+      <div class="hint">Tap a service to filter the map</div>
+    </div>
+
+    <div class="foot">Areas shown at neighborhood level &mdash; never exact client addresses.</div>
+  </div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+  var COLORS = {Bathroom:'#037887', Kitchen:'#d98c30', Tile:'#5f7d84', Repairs:'#bf6a45'};
+  var LABELS = {Bathroom:'Bathroom renovation', Kitchen:'Kitchen renovation', Tile:'Tile & flooring', Repairs:'Repairs & maintenance'};
+
+  /* Real DuetRight footprint — aggregated from completed (archived) Jobber jobs.
+     Row = [neighborhood, lat, lng, dominant, total, Bathroom, Kitchen, Tile, Repairs].
+     Coordinates are neighborhood-level medians (rounded ~1km) — never a client address.
+     Regenerated by build_map_data.py; to auto-update, point DATA_URL at its JSON output. */
+  var AREAS = [["West Seattle",47.57,-122.39,"Repairs",83,17,4,1,61],["West Seattle",47.56,-122.38,"Repairs",63,11,0,0,52],["Capitol Hill / Central District",47.61,-122.3,"Repairs",39,4,0,0,35],["Fremont / Wallingford",47.69,-122.34,"Repairs",37,5,0,1,31],["Redmond",47.67,-122.12,"Repairs",37,4,1,1,31],["Beacon Hill / Mount Baker",47.59,-122.3,"Repairs",32,3,0,1,28],["South Lake Union",47.64,-122.34,"Repairs",31,3,0,0,28],["Downtown Seattle",47.61,-122.34,"Repairs",30,0,0,0,30],["Delridge / Highland Park",47.55,-122.36,"Repairs",28,2,0,0,26],["Ravenna / Wedgwood",47.68,-122.3,"Repairs",28,2,0,2,24],["Columbia City / Rainier Valley",47.56,-122.29,"Repairs",25,0,0,2,23],["Bothell / Mill Creek",47.83,-122.21,"Repairs",22,1,0,0,21],["Capitol Hill / Madison Park",47.63,-122.3,"Repairs",20,1,2,0,17],["Bellevue",47.62,-122.2,"Repairs",20,2,2,2,14],["Kirkland",47.71,-122.18,"Repairs",17,3,1,0,13],["Kirkland",47.68,-122.19,"Repairs",17,2,0,1,14],["Ballard / Loyal Heights",47.7,-122.37,"Repairs",16,0,0,1,15],["Issaquah",47.55,-122.02,"Repairs",14,0,0,0,14],["White Center",47.5,-122.34,"Repairs",13,1,0,0,12],["Queen Anne",47.64,-122.37,"Repairs",13,0,3,1,9],["Mountlake Terrace",47.8,-122.31,"Repairs",13,0,0,0,13],["Ballard",47.67,-122.37,"Repairs",13,2,0,0,11],["Lake City",47.71,-122.31,"Repairs",13,0,0,0,13],["Lynnwood",47.86,-122.26,"Repairs",12,4,0,0,8],["Capitol Hill / Eastlake",47.63,-122.32,"Repairs",12,2,0,0,10],["Georgetown / Beacon Hill",47.54,-122.32,"Repairs",12,1,0,0,11],["Bothell",47.8,-122.22,"Repairs",12,0,0,1,11],["Sammamish",47.59,-122.04,"Repairs",11,1,0,0,10],["Northgate",47.7,-122.35,"Repairs",11,0,0,0,11],["Belltown",47.61,-122.34,"Repairs",10,1,0,1,8],["Bellevue",47.56,-122.13,"Repairs",10,1,0,0,9],["Bellevue",47.62,-122.12,"Repairs",10,0,0,0,10],["University District",47.67,-122.29,"Repairs",9,0,0,1,8],["Renton",47.45,-122.17,"Repairs",9,1,0,0,8],["West Seattle",47.54,-122.39,"Repairs",9,1,1,0,7],["Seattle",47.49,-122.24,"Repairs",9,1,0,0,8],["Magnolia",47.65,-122.39,"Repairs",9,1,0,0,8],["Lynnwood",47.81,-122.3,"Repairs",9,3,0,0,6],["Bellevue",47.61,-122.15,"Repairs",9,0,1,1,7],["Lynnwood",47.84,-122.3,"Repairs",9,0,0,1,8],["Bellevue",47.59,-122.15,"Repairs",7,1,0,0,6],["Sammamish",47.63,-122.02,"Repairs",7,0,0,0,7],["Puyallup",47.09,-122.29,"Repairs",7,1,0,1,5],["Mercer Island",47.55,-122.22,"Repairs",6,0,0,0,6],["Auburn",47.32,-122.25,"Repairs",5,0,1,0,4],["Woodinville",47.78,-122.17,"Repairs",5,1,0,1,3],["Renton",47.43,-122.21,"Repairs",5,0,0,0,5],["Pioneer Square",47.61,-122.33,"Repairs",5,0,0,1,4],["Tukwila",47.51,-122.33,"Repairs",5,0,0,0,5],["Shoreline",47.74,-122.32,"Repairs",4,0,0,0,4],["Edmonds",47.81,-122.34,"Repairs",4,0,0,0,4],["Renton",47.52,-122.16,"Repairs",4,0,0,1,3],["Issaquah",47.53,-122.03,"Repairs",4,0,0,0,4],["Everett",47.97,-122.21,"Repairs",4,1,0,0,3],["Kent",47.41,-122.25,"Repairs",4,0,0,0,4],["Everett",47.88,-122.18,"Repairs",4,1,0,0,3],["Seattle",47.55,-122.33,"Repairs",4,1,0,0,3],["Redmond",47.67,-122.06,"Repairs",3,1,0,0,2],["Everett",47.91,-122.26,"Bathroom",3,2,0,0,1],["Snohomish",47.91,-122.09,"Repairs",3,0,0,1,2],["Bothell",47.76,-122.21,"Repairs",3,0,0,0,3],["Kenmore",47.74,-122.23,"Repairs",3,1,0,0,2],["Lake Stevens",47.99,-122.07,"Repairs",3,0,0,0,3],["Silverdale",47.66,-122.68,"Repairs",3,0,0,0,3],["Maple Valley",47.36,-122.04,"Repairs",3,1,0,0,2],["Renton",47.54,-122.17,"Repairs",2,0,0,0,2],["Des moines",47.4,-122.3,"Bathroom",2,1,0,0,1],["Edmonds",47.78,-122.36,"Repairs",2,0,0,0,2],["Seattle",47.61,-122.33,"Kitchen",2,1,1,0,0],["Ravensdale",47.33,-121.9,"Bathroom",2,1,0,0,1],["Tacoma",47.29,-122.38,"Repairs",1,0,0,0,1],["Normandy Park",47.43,-122.34,"Repairs",1,0,0,0,1],["Puyallup",47.09,-122.3,"Bathroom",1,1,0,0,0],["Burien",47.48,-122.34,"Repairs",1,0,0,0,1],["Black Diamond",47.3,-122.04,"Repairs",1,0,0,0,1],["Pacific",47.26,-122.25,"Kitchen",1,0,1,0,0],["Marysville",48.05,-122.12,"Repairs",1,0,0,0,1],["Seattle",47.52,-122.38,"Repairs",1,0,0,0,1],["Broadview / Shoreline",47.7,-122.37,"Repairs",1,0,0,0,1],["Snoqualmie",47.53,-121.88,"Repairs",1,0,0,0,1],["Federal Way",47.31,-122.33,"Bathroom",1,1,0,0,0],["SeaTac",47.46,-122.26,"Repairs",1,0,0,0,1],["Federal Way",47.29,-122.37,"Repairs",1,0,0,0,1],["Renton",47.49,-122.2,"Repairs",1,0,0,0,1]];
+
+  var TYPE_IDX = {Bathroom:5, Kitchen:6, Tile:7, Repairs:8}; // index into an AREAS row
+  var ORDER = ['Bathroom','Kitchen','Tile','Repairs'];       // premium-first
+
+  var map = L.map('map',{
+    scrollWheelZoom:false, zoomControl:true,
+    minZoom:8, maxZoom:16, worldCopyJump:false,
+    maxBounds:[[46.9,-123.2],[48.3,-121.3]], maxBoundsViscosity:0.7
+  }).setView([47.60,-122.30], 10);
+  map.on('click', function(){ map.scrollWheelZoom.enable(); });
+  map.on('mouseout', function(){ map.scrollWheelZoom.disable(); });
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
+    attribution:'&copy; OpenStreetMap &copy; CARTO', subdomains:'abcd', maxZoom:19
+  }).addTo(map);
+
+  // pin color: the most PREMIUM service present in an area (Bathroom > Kitchen > Tile > Repairs)
+  function premiumType(a){
+    for(var i=0;i<ORDER.length;i++){ if(a[TYPE_IDX[ORDER[i]]] > 0) return ORDER[i]; }
+    return 'Repairs';
+  }
+  function radius(n){ return n>=35?17 : n>=15?12.5 : n>=5?9 : 6.5; }
+
+  var layer = L.layerGroup().addTo(map);
+  var activeFilter = 'all';
+
+  function popupHtml(a, filterType){
+    var html = '<div class="pop-hood">'+a[0]+'</div>';
+    if(filterType && filterType!=='all'){
+      html += '<div class="pop-total">'+a[TYPE_IDX[filterType]]+' '+LABELS[filterType].toLowerCase()+' project'+(a[TYPE_IDX[filterType]]==1?'':'s')+'</div>';
+    } else {
+      html += '<div class="pop-total">'+a[4]+' project'+(a[4]==1?'':'s')+' completed</div><div class="pop-mix">';
+      ORDER.forEach(function(t){ var c=a[TYPE_IDX[t]]; if(c>0){ html += '<i style="background:'+COLORS[t]+'"></i>'+c+' '+LABELS[t]+'<br>'; }});
+      html += '</div>';
+    }
+    return html + '<div class="pop-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>';
+  }
+
+  function render(){
+    layer.clearLayers();
+    AREAS.forEach(function(a){
+      var color, size;
+      if(activeFilter==='all'){
+        color = COLORS[premiumType(a)]; size = a[4];
+      } else {
+        var c = a[TYPE_IDX[activeFilter]];
+        if(c<=0) return;                 // hide areas without this service
+        color = COLORS[activeFilter]; size = c;
+      }
+      L.circleMarker([a[1],a[2]], {
+        radius:radius(size), fillColor:color, color:'#fff', weight:2, opacity:1, fillOpacity:0.88
+      }).bindPopup(popupHtml(a, activeFilter)).addTo(layer);
+    });
+  }
+
+  // legend as interactive filters
+  var rows = document.querySelectorAll('#legend .row');
+  rows.forEach(function(r){
+    r.addEventListener('click', function(){
+      var t = r.getAttribute('data-type');
+      activeFilter = (activeFilter===t && t!=='all') ? 'all' : t;
+      rows.forEach(function(x){
+        var xt=x.getAttribute('data-type');
+        x.classList.toggle('active', xt===activeFilter || (activeFilter==='all' && xt==='all'));
+        x.classList.toggle('dim', activeFilter!=='all' && xt!=='all' && xt!==activeFilter);
+      });
+      render();
+    });
+  });
+
+  // frame Puget Sound reliably even if the container sizes late (Webflow section / tab / slow layout)
+  function frameMap(){
+    map.invalidateSize();
+    var pts = AREAS.map(function(a){ return [a[1],a[2]]; });
+    if(pts.length){ map.fitBounds(L.latLngBounds(pts).pad(0.08), {maxZoom:11}); }
+    else { map.setView([47.60,-122.30], 10); }
+  }
+
+  /* ---- Jobs-completed counter (single source of truth: #jobCount data-target) ----
+     To auto-update both the counter AND the map, set DATA_URL to a public JSON
+     ({"completed": <n>, "areas": [...same row shape...]}) that build_map_data.py writes daily. */
+  var DATA_URL = "";
+
+  function animateCount(el, target){
+    var start=0, dur=1400, t0=null;
+    function step(ts){ if(!t0)t0=ts; var p=Math.min((ts-t0)/dur,1); var e=1-Math.pow(1-p,3);
+      el.textContent=Math.round(start+(target-start)*e).toLocaleString(); if(p<1) requestAnimationFrame(step); }
+    requestAnimationFrame(step);
+  }
+  function boot(){
+    var el=document.getElementById('jobCount');
+    var baked=parseInt(el.getAttribute('data-target'),10)||0;
+    render(); frameMap();
+    if(DATA_URL){
+      fetch(DATA_URL,{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
+        if(Array.isArray(d.areas) && d.areas.length){ AREAS=d.areas; render(); frameMap(); }
+        animateCount(el, parseInt(d.completed,10)||baked);
+      }).catch(function(){ animateCount(el, baked); });
+    } else { animateCount(el, baked); }
+  }
+
+  map.whenReady(function(){ setTimeout(frameMap,60); });
+  window.addEventListener('load', frameMap);
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(en){ en.forEach(function(e){ if(e.isIntersecting){ boot(); io.disconnect(); }}); },{threshold:0.25});
+    io.observe(document.querySelector('.panel'));
+  } else { boot(); }
+</script>
+</body>
+</html>
