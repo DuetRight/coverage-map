@@ -14,7 +14,7 @@
 
 <style>
   :root{
-    --teal:#037887;--teal-deep:#02616e;--charcoal:#424143;
+    --teal:#e07b00;--teal-deep:#c26a00;--charcoal:#424143;
     --amber:#d98c30;--slate:#5f7d84;--clay:#bf6a45;--paper:#e9edee;
   }
   *{box-sizing:border-box}
@@ -28,7 +28,7 @@
   .kicker{font-size:10.5px;font-weight:700;letter-spacing:2.2px;color:var(--teal);margin-bottom:6px}
   .panel h1{margin:0;font-size:22px;font-weight:800;letter-spacing:-.4px;color:#2c2b2d}
   .panel h1 .dot{color:var(--teal)}
-  .accent{height:3px;width:52px;margin:10px 0 12px;border-radius:3px;background:linear-gradient(90deg,var(--teal),rgba(3,120,135,0))}
+  .accent{height:3px;width:52px;margin:10px 0 12px;border-radius:3px;background:linear-gradient(90deg,var(--teal),rgba(255,138,61,0))}
   .panel .sub{margin:0;font-size:13px;line-height:1.5;color:#5c5b5d}
   .stat{display:flex;gap:18px;margin-top:16px;flex-wrap:wrap}
   .stat .num{font-size:30px;font-weight:800;color:var(--teal);line-height:1;font-variant-numeric:tabular-nums}
@@ -78,14 +78,14 @@
       <div class="stat">
         <div><div class="num" id="jobCount" data-target="936">0</div><div class="lbl">jobs completed</div></div>
         <div><div class="num">100+</div><div class="lbl">5-star reviews</div></div>
-        <div><div class="num">4.9&#9733;</div><div class="lbl">average rating</div></div>
+        <div><div class="num">84</div><div class="lbl">neighborhoods served</div></div>
       </div>
     </div>
 
     <div class="legend" id="legend">
       <div class="lt">Explore by service</div>
-      <div class="row active" data-type="all"><span class="swatch" style="background:linear-gradient(135deg,#037887,#d98c30)"></span> All work</div>
-      <div class="row" data-type="Bathroom"><span class="swatch" style="background:#037887"></span> Bathroom renovation</div>
+      <div class="row active" data-type="all"><span class="swatch" style="background:linear-gradient(135deg,#FFBB2F,#FF8A3D)"></span> All work</div>
+      <div class="row" data-type="Bathroom"><span class="swatch" style="background:#FF8A3D"></span> Bathroom renovation</div>
       <div class="row" data-type="Kitchen"><span class="swatch" style="background:#d98c30"></span> Kitchen renovation</div>
       <div class="row" data-type="Tile"><span class="swatch" style="background:#5f7d84"></span> Tile &amp; flooring</div>
       <div class="row" data-type="Repairs"><span class="swatch" style="background:#bf6a45"></span> Repairs &amp; maintenance</div>
@@ -98,7 +98,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
-  var COLORS = {Bathroom:'#037887', Kitchen:'#d98c30', Tile:'#5f7d84', Repairs:'#bf6a45'};
+  var COLORS = {Bathroom:'#FF8A3D', Kitchen:'#d98c30', Tile:'#5f7d84', Repairs:'#bf6a45'};
   var LABELS = {Bathroom:'Bathroom renovation', Kitchen:'Kitchen renovation', Tile:'Tile & flooring', Repairs:'Repairs & maintenance'};
 
   /* Real DuetRight footprint — aggregated from completed (archived) Jobber jobs.
