@@ -39,10 +39,12 @@
     padding:13px 15px;box-shadow:0 12px 30px rgba(2,97,110,.14);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
   .legend .lt{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#6d6c6e;margin-bottom:9px}
   .legend .row{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:500;color:#3f3e40;margin:3px 0;
-    cursor:pointer;padding:5px 8px;border-radius:8px;transition:background .12s,opacity .12s;user-select:none}
-  .legend .row:hover{background:rgba(3,120,135,.08)}
-  .legend .row.dim{opacity:.4}
-  .legend .row.active{background:rgba(3,120,135,.12);color:#1f1e20;font-weight:700}
+    cursor:pointer;padding:8px;min-height:36px;border-radius:8px;transition:background .12s,opacity .12s;user-select:none}
+  .legend .row:hover{background:rgba(224,123,0,.08)}
+  .legend .row:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+  .legend .row.dim{opacity:.45}
+  .legend .row.dim .swatch{background:#c9cdce !important}
+  .legend .row.active{background:rgba(224,123,0,.12);color:#1f1e20;font-weight:700}
   .legend .swatch{width:13px;height:13px;border-radius:50%;flex:none;box-shadow:0 0 0 2px #fff, 0 1px 2px rgba(0,0,0,.3)}
   .legend .hint{font-size:10.5px;color:#8a898b;margin-top:8px;font-weight:500}
 
@@ -63,7 +65,12 @@
     .panel{max-width:none;left:12px;right:12px;top:12px;padding:15px 16px}
     .panel h1{font-size:19px}
     .stat .num{font-size:25px}
-    .legend{bottom:12px;left:12px}
+    .legend{bottom:12px;left:12px;right:12px;padding:11px 12px}
+    /* two columns so six toggles don't eat the map */
+    .legend .rows{display:grid;grid-template-columns:1fr 1fr;gap:2px 6px}
+    .legend .row{min-height:44px;padding:8px 7px;font-size:12.5px;margin:0;gap:7px;line-height:1.25}
+    .legend .row[data-type="all"],.legend .row-story{grid-column:1 / -1}
+    .legend .hint{margin-top:7px}
     .foot{display:none}
   }
 </style>
@@ -87,12 +94,14 @@
 
     <div class="legend" id="legend">
       <div class="lt">Explore by service</div>
-      <div class="row active" data-type="all" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:linear-gradient(135deg,#FFBB2F,#FF8A3D)"></span> All work</div>
-      <div class="row active" data-type="Bathroom" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:#FF8A3D"></span> Bathroom renovation</div>
-      <div class="row active" data-type="Kitchen" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:#d98c30"></span> Kitchen renovation</div>
-      <div class="row active" data-type="Tile" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:#5f7d84"></span> Tile &amp; flooring</div>
-      <div class="row active" data-type="Repairs" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:#bf6a45"></span> Repairs &amp; maintenance</div>
-      <div class="row row-story active" id="storyToggle" role="button" tabindex="0" aria-pressed="true"><span style="width:13px;flex:none;text-align:center;color:#e07b00;font-size:15px;line-height:1">&#9733;</span> Client stories</div>
+      <div class="rows">
+        <div class="row active" data-type="all" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:linear-gradient(135deg,#FFBB2F,#FF8A3D)"></span> All work</div>
+        <div class="row active" data-type="Bathroom" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:#FF8A3D"></span> Bathroom renovation</div>
+        <div class="row active" data-type="Kitchen" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:#d98c30"></span> Kitchen renovation</div>
+        <div class="row active" data-type="Tile" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:#5f7d84"></span> Tile &amp; flooring</div>
+        <div class="row active" data-type="Repairs" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:#bf6a45"></span> Repairs &amp; maintenance</div>
+        <div class="row row-story active" id="storyToggle" role="button" tabindex="0" aria-pressed="true"><span style="width:13px;flex:none;text-align:center;color:#e07b00;font-size:15px;line-height:1">&#9733;</span> Client stories</div>
+      </div>
       <div class="hint">Tap to show or hide each service</div>
     </div>
 
@@ -140,11 +149,6 @@
     attribution:'&copy; OpenStreetMap &copy; CARTO', subdomains:'abcd', maxZoom:19
   }).addTo(map);
 
-  // pin color: the most PREMIUM service present in an area (Bathroom > Kitchen > Tile > Repairs)
-  function premiumType(a){
-    for(var i=0;i<ORDER.length;i++){ if(a[TYPE_IDX[ORDER[i]]] > 0) return ORDER[i]; }
-    return 'Repairs';
-  }
   function radius(n){ return n>=35?17 : n>=15?12.5 : n>=5?9 : 6.5; }
 
   var layer = L.layerGroup().addTo(map);
