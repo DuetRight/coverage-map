@@ -87,13 +87,13 @@
 
     <div class="legend" id="legend">
       <div class="lt">Explore by service</div>
-      <div class="row active" data-type="all"><span class="swatch" style="background:linear-gradient(135deg,#FFBB2F,#FF8A3D)"></span> All work</div>
-      <div class="row" data-type="Bathroom"><span class="swatch" style="background:#FF8A3D"></span> Bathroom renovation</div>
-      <div class="row" data-type="Kitchen"><span class="swatch" style="background:#d98c30"></span> Kitchen renovation</div>
-      <div class="row" data-type="Tile"><span class="swatch" style="background:#5f7d84"></span> Tile &amp; flooring</div>
-      <div class="row" data-type="Repairs"><span class="swatch" style="background:#bf6a45"></span> Repairs &amp; maintenance</div>
-      <div class="row row-story active" id="storyToggle"><span style="width:13px;flex:none;text-align:center;color:#e07b00;font-size:15px;line-height:1">&#9733;</span> Client stories</div>
-      <div class="hint">Tap a service to filter the map</div>
+      <div class="row active" data-type="all" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:linear-gradient(135deg,#FFBB2F,#FF8A3D)"></span> All work</div>
+      <div class="row active" data-type="Bathroom" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:#FF8A3D"></span> Bathroom renovation</div>
+      <div class="row active" data-type="Kitchen" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:#d98c30"></span> Kitchen renovation</div>
+      <div class="row active" data-type="Tile" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:#5f7d84"></span> Tile &amp; flooring</div>
+      <div class="row active" data-type="Repairs" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:#bf6a45"></span> Repairs &amp; maintenance</div>
+      <div class="row row-story active" id="storyToggle" role="button" tabindex="0" aria-pressed="true"><span style="width:13px;flex:none;text-align:center;color:#e07b00;font-size:15px;line-height:1">&#9733;</span> Client stories</div>
+      <div class="hint">Tap to show or hide each service</div>
     </div>
 
     <div class="foot">Areas shown at neighborhood level &mdash; never exact client addresses.</div>
@@ -148,34 +148,43 @@
   function radius(n){ return n>=35?17 : n>=15?12.5 : n>=5?9 : 6.5; }
 
   var layer = L.layerGroup().addTo(map);
-  var activeFilter = 'all';
+  // multi-select: each service toggles independently; empty set = no service dots
+  var active = {Bathroom:true, Kitchen:true, Tile:true, Repairs:true};
 
-  function popupHtml(a, filterType){
+  function activeCount(){ return ORDER.filter(function(t){ return active[t]; }).length; }
+
+  function popupHtml(a){
+    var all = activeCount()===ORDER.length;
     var html = '<div class="pop-hood">'+a[0]+'</div>';
-    if(filterType && filterType!=='all'){
-      html += '<div class="pop-total">'+a[TYPE_IDX[filterType]]+' '+LABELS[filterType].toLowerCase()+' project'+(a[TYPE_IDX[filterType]]==1?'':'s')+'</div>';
+    if(all){
+      html += '<div class="pop-total">'+a[4]+' project'+(a[4]==1?'':'s')+' completed</div>';
     } else {
-      html += '<div class="pop-total">'+a[4]+' project'+(a[4]==1?'':'s')+' completed</div><div class="pop-mix">';
-      ORDER.forEach(function(t){ var c=a[TYPE_IDX[t]]; if(c>0){ html += '<i style="background:'+COLORS[t]+'"></i>'+c+' '+LABELS[t]+'<br>'; }});
-      html += '</div>';
+      var sum = 0;
+      ORDER.forEach(function(t){ if(active[t]) sum += a[TYPE_IDX[t]]; });
+      html += '<div class="pop-total">'+sum+' project'+(sum==1?'':'s')+'</div>';
     }
+    html += '<div class="pop-mix">';
+    ORDER.forEach(function(t){ var c=a[TYPE_IDX[t]]; if(c>0 && active[t]){ html += '<i style="background:'+COLORS[t]+'"></i>'+c+' '+LABELS[t]+'<br>'; }});
+    html += '</div>';
     return html + '<div class="pop-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>';
+  }
+
+  // pin color: most premium ACTIVE service present in the area
+  function premiumActiveType(a){
+    for(var i=0;i<ORDER.length;i++){ var t=ORDER[i]; if(active[t] && a[TYPE_IDX[t]] > 0) return t; }
+    return null;
   }
 
   function render(){
     layer.clearLayers();
     AREAS.forEach(function(a){
-      var color, size;
-      if(activeFilter==='all'){
-        color = COLORS[premiumType(a)]; size = a[4];
-      } else {
-        var c = a[TYPE_IDX[activeFilter]];
-        if(c<=0) return;                 // hide areas without this service
-        color = COLORS[activeFilter]; size = c;
-      }
+      var t = premiumActiveType(a);
+      if(!t) return;                     // no active service in this area
+      var size = 0;
+      ORDER.forEach(function(x){ if(active[x]) size += a[TYPE_IDX[x]]; });
       L.circleMarker([a[1],a[2]], {
-        radius:radius(size), fillColor:color, color:'#fff', weight:2, opacity:1, fillOpacity:0.88
-      }).bindPopup(popupHtml(a, activeFilter)).addTo(layer);
+        radius:radius(size), fillColor:COLORS[t], color:'#fff', weight:2, opacity:1, fillOpacity:0.88
+      }).bindPopup(popupHtml(a)).addTo(layer);
     });
   }
 
@@ -188,23 +197,44 @@
       '<a class="pop-story-link" href="https://www.duetright.com/blog/'+st[4]+'" target="_top">Read the story &rarr;</a>'
     ).addTo(storyLayer);
   });
+  function setRowState(el, on){
+    el.classList.toggle('active', on);
+    el.classList.toggle('dim', !on);
+    el.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+  function onActivate(el, fn){
+    el.addEventListener('click', fn);
+    el.addEventListener('keydown', function(e){
+      if(e.key==='Enter' || e.key===' '){ e.preventDefault(); fn(); }
+    });
+  }
+
   var storyToggle = document.getElementById('storyToggle');
-  storyToggle.addEventListener('click', function(){
-    if(map.hasLayer(storyLayer)){ map.removeLayer(storyLayer); storyToggle.classList.remove('active'); storyToggle.classList.add('dim'); }
-    else { map.addLayer(storyLayer); storyToggle.classList.add('active'); storyToggle.classList.remove('dim'); }
+  onActivate(storyToggle, function(){
+    if(map.hasLayer(storyLayer)){ map.removeLayer(storyLayer); setRowState(storyToggle, false); }
+    else { map.addLayer(storyLayer); setRowState(storyToggle, true); }
   });
 
-  // legend as interactive filters
+  // legend as independent show/hide toggles; "All work" = master on/off
   var rows = document.querySelectorAll('#legend .row:not(.row-story)');
+  var allRow = document.querySelector('#legend .row[data-type="all"]');
+  function syncLegend(){
+    rows.forEach(function(x){
+      var xt = x.getAttribute('data-type');
+      if(xt!=='all') setRowState(x, !!active[xt]);
+    });
+    setRowState(allRow, activeCount()===ORDER.length);
+  }
   rows.forEach(function(r){
-    r.addEventListener('click', function(){
-      var t = r.getAttribute('data-type');
-      activeFilter = (activeFilter===t && t!=='all') ? 'all' : t;
-      rows.forEach(function(x){
-        var xt=x.getAttribute('data-type');
-        x.classList.toggle('active', xt===activeFilter || (activeFilter==='all' && xt==='all'));
-        x.classList.toggle('dim', activeFilter!=='all' && xt!=='all' && xt!==activeFilter);
-      });
+    var t = r.getAttribute('data-type');
+    onActivate(r, function(){
+      if(t==='all'){
+        var on = activeCount() < ORDER.length;   // any off -> turn all on; all on -> turn all off
+        ORDER.forEach(function(x){ active[x] = on; });
+      } else {
+        active[t] = !active[t];
+      }
+      syncLegend();
       render();
     });
   });
