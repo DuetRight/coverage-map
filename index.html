@@ -145,9 +145,23 @@
   map.on('click', function(){ map.scrollWheelZoom.enable(); });
   map.on('mouseout', function(){ map.scrollWheelZoom.disable(); });
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
-    attribution:'&copy; OpenStreetMap &copy; CARTO', subdomains:'abcd', maxZoom:19
+  /* Basemap: Esri "World Light Gray Canvas" — key-free. CARTO's free anonymous
+     basemap tiles were retired and now render an "API KEY REQUIRED" watermark
+     across every tile, so this map moved off them 2026-08-30. Base + reference
+     (labels) are two separate layers in this Esri service. */
+  var baseTiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{
+    attribution:'Esri, HERE, Garmin, &copy; OpenStreetMap contributors', maxZoom:16, keepBuffer:0
   }).addTo(map);
+  var refTiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',{
+    maxZoom:16, keepBuffer:0
+  }).addTo(map);
+
+  /* The label layer is transparent, so Leaflet's habit of keeping a lower-zoom parent
+     tile as a placeholder draws every place name twice at two sizes until the parent
+     is pruned. frameMap() runs several times on load, which makes that state stick.
+     Opt the label layer out of tile retention — a blank moment beats doubled labels. */
+  refTiles._retainParent = function(){ return false; };
+  refTiles._retainChildren = function(){ return false; };
 
   function radius(n){ return n>=35?17 : n>=15?12.5 : n>=5?9 : 6.5; }
 
