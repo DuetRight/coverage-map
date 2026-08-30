@@ -16,13 +16,18 @@
   :root{
     --teal:#e07b00;--teal-deep:#c26a00;--charcoal:#424143;
     --amber:#d98c30;--slate:#5f7d84;--clay:#bf6a45;--paper:#e9edee;
+    --map-h:620px;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%;font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--charcoal);background:var(--paper)}
-  #wrap{position:relative;height:100%;width:100%;min-height:520px}
+  html,body{margin:0;font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--charcoal);background:var(--paper)}
+
+  /* Page is a column: map shell, then the work log. On phones the shell itself
+     becomes a column too, so the panel and legend stop covering the map. */
+  #wrap{display:flex;flex-direction:column}
+  #mapshell{position:relative;height:var(--map-h);flex:none}
   #map{position:absolute;inset:0;background:var(--paper)}
 
-  .panel{position:absolute;z-index:1000;top:20px;left:20px;max-width:340px;
+  .panel{position:absolute;z-index:1000;top:20px;left:20px;max-width:400px;
     background:rgba(255,255,255,.94);border:1px solid rgba(66,65,67,.10);border-radius:16px;
     padding:18px 20px;box-shadow:0 16px 44px rgba(2,97,110,.16);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
   .kicker{font-size:10.5px;font-weight:700;letter-spacing:2.2px;color:var(--teal);margin-bottom:6px}
@@ -30,9 +35,9 @@
   .panel h1 .dot{color:var(--teal)}
   .accent{height:3px;width:52px;margin:10px 0 12px;border-radius:3px;background:linear-gradient(90deg,var(--teal),rgba(255,138,61,0))}
   .panel .sub{margin:0;font-size:13px;line-height:1.5;color:#5c5b5d}
-  .stat{display:flex;gap:18px;margin-top:16px;flex-wrap:wrap}
+  .stat{display:flex;gap:16px;margin-top:16px;flex-wrap:nowrap}
   .stat .num{font-size:30px;font-weight:800;color:var(--teal);line-height:1;font-variant-numeric:tabular-nums}
-  .stat .lbl{font-size:10px;font-weight:600;color:#6d6c6e;text-transform:uppercase;letter-spacing:.5px;margin-top:5px;max-width:96px}
+  .stat .lbl{font-size:10px;font-weight:600;color:#6d6c6e;text-transform:uppercase;letter-spacing:.5px;margin-top:5px;max-width:106px}
 
   .legend{position:absolute;z-index:1000;bottom:20px;left:20px;
     background:rgba(255,255,255,.94);border:1px solid rgba(66,65,67,.10);border-radius:14px;
@@ -61,51 +66,127 @@
   .pop-story-link{display:inline-block;margin-top:7px;font-size:13px;font-weight:700;color:#c26a00;text-decoration:none}
   .leaflet-popup-content{margin:12px 15px}
 
-  @media (max-width:560px){
-    .panel{max-width:none;left:12px;right:12px;top:12px;padding:15px 16px}
-    .panel h1{font-size:19px}
-    .stat .num{font-size:25px}
-    .legend{bottom:12px;left:12px;right:12px;padding:11px 12px}
-    /* two columns so six toggles don't eat the map */
-    .legend .rows{display:grid;grid-template-columns:1fr 1fr;gap:2px 6px}
-    .legend .row{min-height:44px;padding:8px 7px;font-size:12.5px;margin:0;gap:7px;line-height:1.25}
-    .legend .row[data-type="all"],.legend .row-story{grid-column:1 / -1}
-    .legend .hint{margin-top:7px}
+  /* ---------- The Work Log ---------- */
+  .worklog{background:#fff;border-top:1px solid rgba(66,65,67,.10);padding:26px 24px 28px}
+  .wl-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .wl-title{margin:2px 0 0;font-size:20px;font-weight:800;letter-spacing:-.4px;color:#2c2b2d}
+  .wl-live{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;color:#6d6c6e;
+    background:#f4f6f6;border-radius:999px;padding:6px 12px;white-space:nowrap}
+  .wl-live i{width:7px;height:7px;border-radius:50%;background:#3fae6a;display:inline-block;
+    box-shadow:0 0 0 0 rgba(63,174,106,.6);animation:wlpulse 2.4s infinite}
+  @keyframes wlpulse{0%{box-shadow:0 0 0 0 rgba(63,174,106,.55)}70%{box-shadow:0 0 0 7px rgba(63,174,106,0)}100%{box-shadow:0 0 0 0 rgba(63,174,106,0)}}
+
+  .wl-grid{display:grid;grid-template-columns:minmax(200px,1fr) 1.35fr;gap:26px;align-items:end;margin-top:20px}
+  .wl-total{font-size:52px;font-weight:800;color:var(--teal);line-height:.95;letter-spacing:-1.5px;font-variant-numeric:tabular-nums}
+  .wl-total-lbl{font-size:11px;font-weight:600;color:#6d6c6e;text-transform:uppercase;letter-spacing:.7px;margin-top:8px}
+  .wl-mix{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px;margin-top:18px}
+  .wl-mix div{font-size:12px;color:#5c5b5d;font-weight:500}
+  .wl-mix b{display:block;font-size:17px;font-weight:800;color:#3f3e40;font-variant-numeric:tabular-nums}
+  .wl-mix i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .wl-curve{position:relative}
+  .wl-curve svg{display:block;width:100%;height:120px;overflow:visible}
+  .wl-curve .cap{font-size:10.5px;color:#8a898b;font-weight:600;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+
+  .wl-recent{margin-top:24px;border-top:1px solid rgba(66,65,67,.09);padding-top:18px}
+  .wl-sub{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.4px;color:#8a898b;margin-bottom:10px}
+  #wlList{list-style:none;margin:0;padding:0}
+  #wlList li{display:flex;align-items:center;gap:11px;padding:9px 2px;border-bottom:1px solid rgba(66,65,67,.06);
+    font-size:13.5px;opacity:0;transform:translateY(5px);animation:wlin .45s ease forwards}
+  #wlList li:last-child{border-bottom:0}
+  @keyframes wlin{to{opacity:1;transform:none}}
+  #wlList .sw{width:10px;height:10px;border-radius:50%;flex:none;box-shadow:0 0 0 2px #fff,0 1px 2px rgba(0,0,0,.22)}
+  #wlList .svc{font-weight:700;color:#2c2b2d}
+  #wlList .hood{color:#5c5b5d}
+  #wlList .when{margin-left:auto;color:#8a898b;font-size:12px;white-space:nowrap;font-weight:500}
+  #wlList .sep{color:#c4c3c5}
+
+  @media (max-width:760px){
+    /* Stop the overlays from eating the map: everything becomes flow. */
+    #mapshell{height:auto;display:flex;flex-direction:column}
+    #map{position:relative;inset:auto;height:360px;flex:none;order:2}
+    .panel{position:static;max-width:none;order:1;border-radius:0;border:0;
+      border-bottom:1px solid rgba(66,65,67,.10);box-shadow:none;background:#fff;padding:16px 18px 14px}
+    .panel .sub{display:none}
+    .accent{margin:8px 0 0}
+    .stat{gap:18px;margin-top:14px;flex-wrap:wrap}
+    .stat .num{font-size:24px}
+    .stat .lbl{font-size:9.5px;max-width:none}
+    .legend{position:static;order:3;border-radius:0;border:0;border-top:1px solid rgba(66,65,67,.10);
+      box-shadow:none;background:#fff;padding:12px 14px 14px}
+    .legend .rows{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .legend .rows::-webkit-scrollbar{display:none}
+    .legend .row{margin:0;white-space:nowrap;flex:none;background:#f4f6f6;padding:9px 13px;min-height:40px;font-size:12.5px}
+    .legend .hint{margin-top:9px}
     .foot{display:none}
+    .worklog{padding:22px 18px 24px}
+    .wl-grid{grid-template-columns:1fr;gap:20px;align-items:start}
+    .wl-total{font-size:44px}
+    .wl-mix{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .wl-curve svg{height:96px}
+    #wlList .when{font-size:11.5px}
   }
 </style>
 </head>
 <body>
 
   <div id="wrap">
-    <div id="map"></div>
+    <div id="mapshell">
+      <div id="map"></div>
 
-    <div class="panel">
-      <div class="kicker">DUETRIGHT &middot; SEATTLE</div>
-      <h1>Where We Work<span class="dot">.</span></h1>
-      <div class="accent"></div>
-      <p class="sub">Bathroom renovations done right &mdash; plus kitchens, tile, flooring, and repairs across greater Seattle.</p>
-      <div class="stat">
-        <div><div class="num" id="jobCount" data-target="936">0</div><div class="lbl">jobs completed</div></div>
-        <div><div class="num">100+</div><div class="lbl">5-star reviews</div></div>
-        <div><div class="num">84</div><div class="lbl">neighborhoods served</div></div>
+      <div class="panel">
+        <div class="kicker">DUETRIGHT &middot; SEATTLE</div>
+        <h1>Where We Work<span class="dot">.</span></h1>
+        <div class="accent"></div>
+        <p class="sub">Bathroom renovations done right &mdash; plus kitchens, tile, flooring, and repairs, right here in Seattle.</p>
+        <div class="stat">
+          <div><div class="num" id="jobCount" data-target="566">0</div><div class="lbl">jobs completed</div></div>
+          <div><div class="num">100+</div><div class="lbl">5-star reviews</div></div>
+          <div><div class="num" id="hoodCount">24</div><div class="lbl">Seattle neighborhoods</div></div>
+        </div>
       </div>
+
+      <div class="legend" id="legend">
+        <div class="lt">Explore by service</div>
+        <div class="rows">
+          <div class="row active" data-type="all" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:linear-gradient(135deg,#FFBB2F,#FF8A3D)"></span> All work</div>
+          <div class="row active" data-type="Bathroom" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:#FF8A3D"></span> Bathroom renovation</div>
+          <div class="row active" data-type="Kitchen" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:#d98c30"></span> Kitchen renovation</div>
+          <div class="row active" data-type="Tile" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:#5f7d84"></span> Tile &amp; flooring</div>
+          <div class="row active" data-type="Repairs" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:#bf6a45"></span> Repairs &amp; maintenance</div>
+          <div class="row row-story active" id="storyToggle" role="button" tabindex="0" aria-pressed="true"><span style="width:13px;flex:none;text-align:center;color:#e07b00;font-size:15px;line-height:1">&#9733;</span> Client stories</div>
+        </div>
+        <div class="hint">Tap to show or hide each service</div>
+      </div>
+
+      <div class="foot">Areas shown at neighborhood level &mdash; never exact client addresses.</div>
     </div>
 
-    <div class="legend" id="legend">
-      <div class="lt">Explore by service</div>
-      <div class="rows">
-        <div class="row active" data-type="all" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:linear-gradient(135deg,#FFBB2F,#FF8A3D)"></span> All work</div>
-        <div class="row active" data-type="Bathroom" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:#FF8A3D"></span> Bathroom renovation</div>
-        <div class="row active" data-type="Kitchen" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:#d98c30"></span> Kitchen renovation</div>
-        <div class="row active" data-type="Tile" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:#5f7d84"></span> Tile &amp; flooring</div>
-        <div class="row active" data-type="Repairs" role="button" tabindex="0" aria-pressed="true"><span class="swatch" style="background:#bf6a45"></span> Repairs &amp; maintenance</div>
-        <div class="row row-story active" id="storyToggle" role="button" tabindex="0" aria-pressed="true"><span style="width:13px;flex:none;text-align:center;color:#e07b00;font-size:15px;line-height:1">&#9733;</span> Client stories</div>
+    <section class="worklog">
+      <div class="wl-head">
+        <div>
+          <div class="kicker">THE WORK LOG</div>
+          <h2 class="wl-title">Every job we&rsquo;ve finished in Seattle</h2>
+        </div>
+        <div class="wl-live"><i></i> Updates as jobs close</div>
       </div>
-      <div class="hint">Tap to show or hide each service</div>
-    </div>
 
-    <div class="foot">Areas shown at neighborhood level &mdash; never exact client addresses.</div>
+      <div class="wl-grid">
+        <div>
+          <div class="wl-total" id="wlTotal">0</div>
+          <div class="wl-total-lbl">Jobs completed in Seattle</div>
+          <div class="wl-mix" id="wlMix"></div>
+        </div>
+        <div class="wl-curve">
+          <div class="cap" id="wlCurveCap">Completed work, running total</div>
+          <svg id="wlCurve" viewBox="0 0 600 120" preserveAspectRatio="none" aria-hidden="true"></svg>
+        </div>
+      </div>
+
+      <div class="wl-recent">
+        <div class="wl-sub">Recently completed</div>
+        <ul id="wlList"></ul>
+      </div>
+    </section>
   </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -114,34 +195,35 @@
   var COLORS = {Bathroom:'#FF8A3D', Kitchen:'#d98c30', Tile:'#5f7d84', Repairs:'#bf6a45'};
   var LABELS = {Bathroom:'Bathroom renovation', Kitchen:'Kitchen renovation', Tile:'Tile & flooring', Repairs:'Repairs & maintenance'};
 
-  /* Real DuetRight footprint — aggregated from completed (archived) Jobber jobs.
+  /* DuetRight's Seattle footprint — aggregated from completed (archived) Jobber jobs inside
+     Seattle city limits (Angelo, 2026-08-30; see TASKS.md for the scope decision).
      Row = [neighborhood, lat, lng, dominant, total, Bathroom, Kitchen, Tile, Repairs].
      Coordinates are neighborhood-level medians (rounded ~1km) — never a client address.
-     Regenerated by build_map_data.py; to auto-update, point DATA_URL at its JSON output. */
-  var AREAS = [["West Seattle",47.57,-122.39,"Repairs",83,17,4,1,61],["West Seattle",47.56,-122.38,"Repairs",63,11,0,0,52],["Capitol Hill / Central District",47.61,-122.3,"Repairs",39,4,0,0,35],["Fremont / Wallingford",47.69,-122.34,"Repairs",37,5,0,1,31],["Redmond",47.67,-122.12,"Repairs",37,4,1,1,31],["Beacon Hill / Mount Baker",47.59,-122.3,"Repairs",32,3,0,1,28],["South Lake Union",47.64,-122.34,"Repairs",31,3,0,0,28],["Downtown Seattle",47.61,-122.34,"Repairs",30,0,0,0,30],["Delridge / Highland Park",47.55,-122.36,"Repairs",28,2,0,0,26],["Ravenna / Wedgwood",47.68,-122.3,"Repairs",28,2,0,2,24],["Columbia City / Rainier Valley",47.56,-122.29,"Repairs",25,0,0,2,23],["Bothell / Mill Creek",47.83,-122.21,"Repairs",22,1,0,0,21],["Capitol Hill / Madison Park",47.63,-122.3,"Repairs",20,1,2,0,17],["Bellevue",47.62,-122.2,"Repairs",20,2,2,2,14],["Kirkland",47.71,-122.18,"Repairs",17,3,1,0,13],["Kirkland",47.68,-122.19,"Repairs",17,2,0,1,14],["Ballard / Loyal Heights",47.7,-122.37,"Repairs",16,0,0,1,15],["Issaquah",47.55,-122.02,"Repairs",14,0,0,0,14],["White Center",47.5,-122.34,"Repairs",13,1,0,0,12],["Queen Anne",47.64,-122.37,"Repairs",13,0,3,1,9],["Mountlake Terrace",47.8,-122.31,"Repairs",13,0,0,0,13],["Ballard",47.67,-122.37,"Repairs",13,2,0,0,11],["Lake City",47.71,-122.31,"Repairs",13,0,0,0,13],["Lynnwood",47.86,-122.26,"Repairs",12,4,0,0,8],["Capitol Hill / Eastlake",47.63,-122.32,"Repairs",12,2,0,0,10],["Georgetown / Beacon Hill",47.54,-122.32,"Repairs",12,1,0,0,11],["Bothell",47.8,-122.22,"Repairs",12,0,0,1,11],["Sammamish",47.59,-122.04,"Repairs",11,1,0,0,10],["Northgate",47.7,-122.35,"Repairs",11,0,0,0,11],["Belltown",47.61,-122.34,"Repairs",10,1,0,1,8],["Bellevue",47.56,-122.13,"Repairs",10,1,0,0,9],["Bellevue",47.62,-122.12,"Repairs",10,0,0,0,10],["University District",47.67,-122.29,"Repairs",9,0,0,1,8],["Renton",47.45,-122.17,"Repairs",9,1,0,0,8],["West Seattle",47.54,-122.39,"Repairs",9,1,1,0,7],["Seattle",47.49,-122.24,"Repairs",9,1,0,0,8],["Magnolia",47.65,-122.39,"Repairs",9,1,0,0,8],["Lynnwood",47.81,-122.3,"Repairs",9,3,0,0,6],["Bellevue",47.61,-122.15,"Repairs",9,0,1,1,7],["Lynnwood",47.84,-122.3,"Repairs",9,0,0,1,8],["Bellevue",47.59,-122.15,"Repairs",7,1,0,0,6],["Sammamish",47.63,-122.02,"Repairs",7,0,0,0,7],["Puyallup",47.09,-122.29,"Repairs",7,1,0,1,5],["Mercer Island",47.55,-122.22,"Repairs",6,0,0,0,6],["Auburn",47.32,-122.25,"Repairs",5,0,1,0,4],["Woodinville",47.78,-122.17,"Repairs",5,1,0,1,3],["Renton",47.43,-122.21,"Repairs",5,0,0,0,5],["Pioneer Square",47.61,-122.33,"Repairs",5,0,0,1,4],["Tukwila",47.51,-122.33,"Repairs",5,0,0,0,5],["Shoreline",47.74,-122.32,"Repairs",4,0,0,0,4],["Edmonds",47.81,-122.34,"Repairs",4,0,0,0,4],["Renton",47.52,-122.16,"Repairs",4,0,0,1,3],["Issaquah",47.53,-122.03,"Repairs",4,0,0,0,4],["Everett",47.97,-122.21,"Repairs",4,1,0,0,3],["Kent",47.41,-122.25,"Repairs",4,0,0,0,4],["Everett",47.88,-122.18,"Repairs",4,1,0,0,3],["Seattle",47.55,-122.33,"Repairs",4,1,0,0,3],["Redmond",47.67,-122.06,"Repairs",3,1,0,0,2],["Everett",47.91,-122.26,"Bathroom",3,2,0,0,1],["Snohomish",47.91,-122.09,"Repairs",3,0,0,1,2],["Bothell",47.76,-122.21,"Repairs",3,0,0,0,3],["Kenmore",47.74,-122.23,"Repairs",3,1,0,0,2],["Lake Stevens",47.99,-122.07,"Repairs",3,0,0,0,3],["Silverdale",47.66,-122.68,"Repairs",3,0,0,0,3],["Maple Valley",47.36,-122.04,"Repairs",3,1,0,0,2],["Renton",47.54,-122.17,"Repairs",2,0,0,0,2],["Des moines",47.4,-122.3,"Bathroom",2,1,0,0,1],["Edmonds",47.78,-122.36,"Repairs",2,0,0,0,2],["Seattle",47.61,-122.33,"Kitchen",2,1,1,0,0],["Ravensdale",47.33,-121.9,"Bathroom",2,1,0,0,1],["Tacoma",47.29,-122.38,"Repairs",1,0,0,0,1],["Normandy Park",47.43,-122.34,"Repairs",1,0,0,0,1],["Puyallup",47.09,-122.3,"Bathroom",1,1,0,0,0],["Burien",47.48,-122.34,"Repairs",1,0,0,0,1],["Black Diamond",47.3,-122.04,"Repairs",1,0,0,0,1],["Pacific",47.26,-122.25,"Kitchen",1,0,1,0,0],["Marysville",48.05,-122.12,"Repairs",1,0,0,0,1],["Seattle",47.52,-122.38,"Repairs",1,0,0,0,1],["Broadview / Shoreline",47.7,-122.37,"Repairs",1,0,0,0,1],["Snoqualmie",47.53,-121.88,"Repairs",1,0,0,0,1],["Federal Way",47.31,-122.33,"Bathroom",1,1,0,0,0],["SeaTac",47.46,-122.26,"Repairs",1,0,0,0,1],["Federal Way",47.29,-122.37,"Repairs",1,0,0,0,1],["Renton",47.49,-122.2,"Repairs",1,0,0,0,1]];
+     This baked copy is only the first paint; update_map_data.py refreshes data.json daily. */
+  var AREAS = [["West Seattle",47.57,-122.39,"Repairs",83,17,4,1,61],["West Seattle",47.56,-122.38,"Repairs",63,11,0,0,52],["Capitol Hill / Central District",47.61,-122.3,"Repairs",39,4,0,0,35],["Fremont / Wallingford",47.69,-122.34,"Repairs",38,5,0,1,32],["Beacon Hill / Mount Baker",47.59,-122.3,"Repairs",32,3,0,1,28],["South Lake Union",47.64,-122.34,"Repairs",31,3,0,0,28],["Downtown Seattle",47.61,-122.34,"Repairs",30,0,0,0,30],["Ravenna / Wedgwood",47.68,-122.3,"Repairs",28,2,0,2,24],["Delridge / Highland Park",47.55,-122.36,"Repairs",27,2,0,0,25],["Columbia City / Rainier Valley",47.56,-122.29,"Repairs",26,0,0,2,24],["Capitol Hill / Madison Park",47.63,-122.31,"Repairs",21,0,2,0,19],["Ballard / Loyal Heights",47.7,-122.37,"Repairs",16,0,0,1,15],["Lake City",47.72,-122.31,"Repairs",15,2,0,0,13],["Queen Anne",47.64,-122.37,"Repairs",13,0,3,1,9],["Ballard",47.67,-122.37,"Repairs",13,2,0,0,11],["West Seattle",47.55,-122.38,"Repairs",12,3,1,0,8],["Northgate",47.7,-122.35,"Repairs",12,0,0,0,12],["Capitol Hill / Eastlake",47.63,-122.32,"Repairs",12,2,0,0,10],["Georgetown / Beacon Hill",47.54,-122.32,"Repairs",12,1,0,0,11],["Belltown",47.61,-122.34,"Repairs",10,1,0,1,8],["University District",47.67,-122.29,"Repairs",9,0,0,1,8],["Magnolia",47.65,-122.39,"Repairs",9,1,0,0,8],["Pioneer Square",47.61,-122.33,"Repairs",5,0,0,1,4],["SODO",47.55,-122.33,"Repairs",4,1,0,0,3],["Rainier Beach",47.51,-122.27,"Repairs",3,0,0,0,3],["Downtown Seattle",47.61,-122.33,"Kitchen",2,1,1,0,0],["Broadview",47.7,-122.37,"Repairs",1,0,0,0,1]];
 
   var TYPE_IDX = {Bathroom:5, Kitchen:6, Tile:7, Repairs:8}; // index into an AREAS row
   var ORDER = ['Bathroom','Kitchen','Tile','Repairs'];       // premium-first
 
-  /* Client stories published on duetright.com — locations are the neighborhoods the
-     posts themselves name, plotted at neighborhood level like everything else. */
+  /* Client stories published on duetright.com — Seattle only, to match the map's scope.
+     Locations are the neighborhoods the posts themselves name. */
   var STORIES = [
     ["West Seattle", 47.571, -122.392, "The Story of Dina's Fence", "west-seattle-cedar-fence-replacement"],
     ["West Seattle", 47.562, -122.383, "Three Days, One Sliding Door", "west-seattle-patio-door-replacement"],
     ["West Seattle", 47.552, -122.388, "A Magical Microcement Tub-to-Shower Conversion", "microcement-tub-to-shower-conversion-west-seattle"],
     ["Capitol Hill", 47.62, -122.31, "Reimagining a Capitol Hill Bathroom in 4 Weeks", "4-week-capitol-hill-bathroom-renovation"],
-    ["Kirkland", 47.68, -122.19, "Reimagining a Kirkland Bathroom With Microcement", "reimagining-a-kirkland-bathroom-with-microcement"],
     ["Queen Anne", 47.637, -122.362, "Tom's Queen Anne Condo Bathroom Remodel", "small-bathroom-remodel-in-queen-anne"],
-    ["Edmonds", 47.808, -122.338, "Ophelia's New Door", "cat-door-exterior-door-edmonds"],
     ["Green Lake", 47.68, -122.33, "The Ultimate Double Shower Space in Green Lake", "green-lake-bathroom-remodel-dual-shower"],
     ["Madison Park", 47.632, -122.28, "An 8-Day Spanish Tile Staircase Renovation", "spanish-tile-staircase-renovation"]
   ];
 
+  /* Bounds hug Seattle now that the data does. Panning far out of the city is pointless
+     when there is nothing plotted there. */
   var map = L.map('map',{
     scrollWheelZoom:false, zoomControl:true,
-    minZoom:8, maxZoom:16, worldCopyJump:false,
-    maxBounds:[[46.9,-123.2],[48.3,-121.3]], maxBoundsViscosity:0.7
-  }).setView([47.60,-122.30], 10);
+    minZoom:10, maxZoom:16, worldCopyJump:false,
+    maxBounds:[[47.40,-122.62],[47.83,-122.10]], maxBoundsViscosity:0.75
+  }).setView([47.61,-122.33], 11);
   map.on('click', function(){ map.scrollWheelZoom.enable(); });
   map.on('mouseout', function(){ map.scrollWheelZoom.disable(); });
 
@@ -163,7 +245,9 @@
   refTiles._retainParent = function(){ return false; };
   refTiles._retainChildren = function(){ return false; };
 
-  function radius(n){ return n>=35?17 : n>=15?12.5 : n>=5?9 : 6.5; }
+  /* Smooth sqrt scale. The old stepped thresholds were tuned for a 66-mile spread;
+     inside one city the areas sit much closer together and need gentler sizing. */
+  function radius(n){ return Math.max(5, Math.min(22, 4 + Math.sqrt(n) * 1.9)); }
 
   var layer = L.layerGroup().addTo(map);
   // multi-select: each service toggles independently; empty set = no service dots
@@ -257,17 +341,16 @@
     });
   });
 
-  // frame Puget Sound reliably even if the container sizes late (Webflow section / tab / slow layout)
+  // frame Seattle reliably even if the container sizes late (Webflow section / tab / slow layout)
   function frameMap(){
     map.invalidateSize();
     var pts = AREAS.map(function(a){ return [a[1],a[2]]; });
-    if(pts.length){ map.fitBounds(L.latLngBounds(pts).pad(0.08), {maxZoom:11}); }
-    else { map.setView([47.60,-122.30], 10); }
+    if(pts.length){ map.fitBounds(L.latLngBounds(pts).pad(0.06), {maxZoom:14}); }
+    else { map.setView([47.61,-122.33], 11); }
   }
 
   /* ---- Jobs-completed counter (single source of truth: #jobCount data-target) ----
-     To auto-update both the counter AND the map, set DATA_URL to a public JSON
-     ({"completed": <n>, "areas": [...same row shape...]}) that build_map_data.py writes daily. */
+     DATA_URL also carries the Work Log's numbers, so one fetch feeds both. */
   var DATA_URL = "data.json";  // same-origin on Pages; refreshed daily by update_map_data.py
 
   function animateCount(el, target){
@@ -276,17 +359,128 @@
       el.textContent=Math.round(start+(target-start)*e).toLocaleString(); if(p<1) requestAnimationFrame(step); }
     requestAnimationFrame(step);
   }
+
+  /* ---------- The Work Log ----------
+     Everything here is derived from the same feed the map uses. The feed carries a service
+     class, a neighborhood and a date per completed job — never a title, address, client name
+     or price, matching the privacy standard the map already holds. */
+  function relDate(iso){
+    var d = new Date(iso + 'T12:00:00'), now = new Date();
+    var days = Math.round((now - d) / 86400000);
+    if(days <= 0) return 'today';
+    if(days === 1) return 'yesterday';
+    if(days < 7) return days + ' days ago';
+    if(days < 14) return 'last week';
+    if(days < 61) return Math.round(days/7) + ' weeks ago';
+    return d.toLocaleDateString(undefined, {month:'long', year:'numeric'});
+  }
+
+  // Two jobs finished the same day in the same area are real, but as separate rows they read
+  // like a duplicate. Group them into one line with a count.
+  function groupEvents(list){
+    var out = [];
+    list.forEach(function(e){
+      var last = out[out.length-1];
+      if(last && last[0]===e[0] && last[1]===e[1] && last[2]===e[2]){ last.n++; return; }
+      out.push({0:e[0], 1:e[1], 2:e[2], n:1});
+    });
+    return out;
+  }
+
+  function plural(svc, n){
+    if(n === 1) return LABELS[svc];
+    if(svc === 'Repairs') return n + ' repair &amp; maintenance jobs';
+    if(svc === 'Tile') return n + ' tile &amp; flooring jobs';
+    return n + ' ' + svc.toLowerCase() + ' renovations';
+  }
+
+  function drawCurve(points){
+    var svg = document.getElementById('wlCurve');
+    if(!points || points.length < 2){ svg.parentNode.style.display='none'; return; }
+    var W=600, H=120, vals=points.map(function(p){return p[1];});
+    var max=Math.max.apply(null,vals), min=Math.min.apply(null,vals);
+    var span = Math.max(1, max-min);
+    var step = W/(points.length-1);
+    var xy = points.map(function(p,i){ return [i*step, H - ((p[1]-min)/span)*(H-14) - 7]; });
+    var line = xy.map(function(p,i){ return (i?'L':'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join(' ');
+    var area = line + ' L' + W + ' ' + H + ' L0 ' + H + ' Z';
+    svg.innerHTML =
+      '<defs><linearGradient id="wlg" x1="0" y1="0" x2="0" y2="1">'+
+      '<stop offset="0%" stop-color="#FF8A3D" stop-opacity=".28"/>'+
+      '<stop offset="100%" stop-color="#FF8A3D" stop-opacity="0"/></linearGradient></defs>'+
+      '<path d="'+area+'" fill="url(#wlg)"/>'+
+      '<path d="'+line+'" fill="none" stroke="#e07b00" stroke-width="2.5" '+
+      'stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>'+
+      '<circle cx="'+xy[xy.length-1][0].toFixed(1)+'" cy="'+xy[xy.length-1][1].toFixed(1)+'" r="4" fill="#e07b00" stroke="#fff" stroke-width="2"/>';
+    var first = points[0][0], last = points[points.length-1][0];
+    function label(m){ var d=new Date(m+'-01T12:00:00'); return d.toLocaleDateString(undefined,{month:'short',year:'numeric'}); }
+    document.getElementById('wlCurveCap').textContent = 'Completed work, running total · ' + label(first) + ' – ' + label(last);
+  }
+
+  function renderWorkLog(d){
+    var total = parseInt(d && d.completed, 10) || parseInt(document.getElementById('jobCount').getAttribute('data-target'),10) || 0;
+    animateCount(document.getElementById('wlTotal'), total);
+
+    var mix = document.getElementById('wlMix');
+    var svc = (d && d.by_service) || null;
+    if(svc){
+      mix.innerHTML = ORDER.filter(function(t){ return svc[t]; }).map(function(t){
+        return '<div><b>'+svc[t]+'</b><i style="background:'+COLORS[t]+'"></i>'+LABELS[t]+'</div>';
+      }).join('');
+    } else { mix.style.display='none'; }
+
+    drawCurve(d && d.cumulative);
+
+    var list = document.getElementById('wlList');
+    var recent = (d && d.recent) || [];
+    if(!recent.length){ list.parentNode.style.display='none'; return; }
+    list.innerHTML = groupEvents(recent).slice(0,6).map(function(g,i){
+      return '<li style="animation-delay:'+(i*55)+'ms">'+
+        '<span class="sw" style="background:'+(COLORS[g[0]]||'#bf6a45')+'"></span>'+
+        '<span class="svc">'+plural(g[0], g.n)+'</span>'+
+        '<span class="sep">&middot;</span><span class="hood">'+g[1]+'</span>'+
+        '<span class="when">'+relDate(g[2])+'</span></li>';
+    }).join('');
+  }
+
   function boot(){
     var el=document.getElementById('jobCount');
     var baked=parseInt(el.getAttribute('data-target'),10)||0;
     render(); frameMap();
     if(DATA_URL){
       fetch(DATA_URL,{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
-        if(Array.isArray(d.areas) && d.areas.length){ AREAS=d.areas; render(); frameMap(); }
+        if(Array.isArray(d.areas) && d.areas.length){
+          AREAS=d.areas; render(); frameMap();
+          var hoods={}; d.areas.forEach(function(a){ hoods[a[0]]=1; });
+          document.getElementById('hoodCount').textContent = Object.keys(hoods).length;
+        }
         animateCount(el, parseInt(d.completed,10)||baked);
-      }).catch(function(){ animateCount(el, baked); });
-    } else { animateCount(el, baked); }
+        renderWorkLog(d); postHeight();
+      }).catch(function(){ animateCount(el, baked); renderWorkLog(null); postHeight(); });
+    } else { animateCount(el, baked); renderWorkLog(null); }
   }
+
+  /* ---- Tell the embedding page how tall we are ----
+     The Work Log makes the document height vary with viewport width and font loading, so a
+     fixed iframe height would either clip the card or leave dead space. The parent listens for
+     this message and resizes; it validates our origin, and falls back to a CSS height if this
+     never arrives. */
+  var lastH = 0;
+  function postHeight(){
+    if(window.parent === window) return;
+    // Measure the true content bottom, NOT documentElement.scrollHeight — the latter is
+    // floored at the iframe's own height, so it would ratchet upward every time the parent grows us.
+    var last = document.querySelector('.worklog') || document.getElementById('wrap');
+    var h = Math.ceil(last.getBoundingClientRect().bottom + window.pageYOffset);
+    // Re-post when our content changed OR when the frame we've been given no longer matches it,
+    // so a parent that drifted (stale CSS fallback, a wrong earlier value) gets corrected.
+    if(Math.abs(h - lastH) < 8 && Math.abs(window.innerHeight - h) < 8) return;
+    lastH = h;
+    try { window.parent.postMessage({type:'covmap-height', h:h}, '*'); } catch(e){}
+  }
+  window.addEventListener('load', postHeight);
+  window.addEventListener('resize', function(){ clearTimeout(window._phT); window._phT = setTimeout(postHeight, 150); });
+  if('ResizeObserver' in window){ new ResizeObserver(postHeight).observe(document.documentElement); }
 
   map.whenReady(function(){ setTimeout(frameMap,60); });
   window.addEventListener('load', frameMap);
